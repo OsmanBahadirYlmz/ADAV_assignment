@@ -30,6 +30,7 @@ This section should be deleted before handing it in, but it could be useful for 
     Overall quality of the report and presentation of the results.
 
 ## Research question
+## hjhj
 
 * y: base total stats (`base_total`)
 * x possible: legendary status, exp growth, base happiness, base egg steps, capture rate
