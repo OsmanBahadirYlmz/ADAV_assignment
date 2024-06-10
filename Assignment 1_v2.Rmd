@@ -184,7 +184,7 @@ ggplot(df, aes(x = reorder(Parameter, Correlation), y = Correlation, fill = High
   geom_bar(stat = "identity") +
   scale_fill_manual(values = custom_colors) +
   coord_flip() +
-  labs(title = "Correlation with 'Base Total'", x = "Parameter", y = "Correlation") +
+  labs(title = "Correlation with 'Base Total", x = "Parameter", y = "Correlation") +
   theme_minimal() +
   theme(legend.title = element_blank())
 
@@ -192,6 +192,29 @@ ggplot(df, aes(x = reorder(Parameter, Correlation), y = Correlation, fill = High
 
 ```
 When we look at the graph, we can easily see that base total is highly correlated with sp_attack, attack, sp_defense, and HP. This is expected because the base total of a Pokémon is the sum of these properties. Therefore, we will delete these parameters from our analysis. Our goal is to use other features to calculate the base total of a Pokémon
+```{r}
+
+library(reshape2)
+
+correlation_matrix <- cor(numeric_df)
+correlation_df <- melt(correlation_matrix)
+options(repr.plot.width = 20, repr.plot.height = 16)  # Set the size of the plot
+
+# Plot the heatmap
+ggplot(correlation_df, aes(Var2, Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab",
+                       name="Correlation") +
+  theme_minimal() +
+  labs(title = "Correlation HeatMap", x = "Var1", y = "Var2")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, 
+                                   size = 6, hjust = 1),
+        axis.text.y = element_text(size = 6)) +  # Adjust size of y-axis labels
+  coord_fixed()
+
+
+```
 
 
 ```{r}
@@ -258,7 +281,12 @@ for (val in all_values) {
 df <- df %>%
   select(-type1, -type2)
 
+#converting chr column into numeric column
+df$capture_rate <- ifelse(grepl("[^0-9.-]", df$capture_rate), NA, as.numeric(df$capture_rate))
+
 view(df)
+
+
 
 
 ```
@@ -266,6 +294,7 @@ view(df)
 
 ```{r}
 #Test train split
+library(caret)
 
 set.seed(5462)
 
@@ -295,4 +324,120 @@ view(df_valid)
 
 
 ```
+
+
+
+
+```{r}
+#Regression models for most correlated columns
+
+lm_mse <- function(formula, train_data, valid_data) {
+  y_name <- as.character(formula)[2]
+  y_true <- valid_data[[y_name]]
+  
+  lm_fit <- lm(formula, train_data)
+  y_pred <- predict(lm_fit, newdata = valid_data)
+  
+  mean((y_true - y_pred)^2)
+}
+
+
+lm_mse(base_total ~ height_m+base_egg_steps+is_legendary+weight_kg+experience_growth+dragon, df_train, df_valid)
+
+```
+```{r}
+
+# Fit the model with all data
+model <- lm(base_total ~ ., data = df_train)
+
+summary(model)
+
+```
+
+```{r}
+
+predictions_test <- predict(model, newdata = df_test)
+
+predictions_valid <- predict(model, newdata = df_valid)
+
+view(predictions_test)
+view(predictions_valid)
+
+
+# Function to calculate evaluation metrics
+evaluate_model <- function(actual, predicted) {
+  data.frame(
+    MAE = mean(abs(actual - predicted)),
+    MSE = mean((actual - predicted)^2),
+    RMSE = sqrt(mean((actual - predicted)^2)),
+    R2 = 1 - sum((actual - predicted)^2) / sum((actual - mean(actual))^2)
+  )
+}
+
+# Evaluate on test set
+test_evaluation <- evaluate_model(df_test$base_total, predictions_test)
+print(test_evaluation)
+
+# Evaluate on validation set
+valid_evaluation <- evaluate_model(df_valid$base_total, predictions_valid)
+print(valid_evaluation)
+
+
+```
+
+
+
+```{r}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
