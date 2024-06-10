@@ -207,7 +207,7 @@ ggplot(correlation_df, aes(Var2, Var1, fill = value)) +
                        midpoint = 0, limit = c(-1,1), space = "Lab",
                        name="Correlation") +
   theme_minimal() +
-  labs(title = "Correlation HeatMap", x = "Var1", y = "Var2")+
+  labs(title = "Correlation HeatMap", x = "Features 1", y = "Features 2")+
   theme(axis.text.x = element_text(angle = 90, vjust = 1, 
                                    size = 6, hjust = 1),
         axis.text.y = element_text(size = 6)) +  # Adjust size of y-axis labels
@@ -215,7 +215,30 @@ ggplot(correlation_df, aes(Var2, Var1, fill = value)) +
 
 
 ```
+The above heatmap illustrates the correlation coefficients between pairs of features in the pokemon dataset. Each tile in the heatmap represents the correlation between two features.
 
+
+```{r}
+#multicollinearity
+
+# Calculate VIF to assess multicollinearity
+vif_values <- vif(lm(base_total ~ ., data = df))
+vif_df <- data.frame(Parameter = names(vif_values), VIF = vif_values)
+
+# Print VIF values
+print(vif_values)
+
+# Visualize VIF values
+ggplot(vif_df, aes(x = reorder(Parameter, VIF), y = VIF)) +
+  geom_bar(stat = "identity", fill = "dodgerblue") +
+  coord_flip() +
+  labs(title = "Variance Inflation Factor (VIF) for Predictors", x = "Parameter", y = "VIF") +
+  theme_minimal()+
+  theme(axis.text.y = element_text(size = 7))
+
+
+```
+The graph shows the Variance Inflation Factor (VIF) values for each predictor in the pokemon dataset. Each bar represents a predictor, and the height of the bar indicates the VIF value.
 
 ```{r}
 #Data preProcessing
