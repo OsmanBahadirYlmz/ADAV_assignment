@@ -385,7 +385,7 @@ print(valid_evaluation)
 
 ```
 
-
+We can examine the metrics of our model on both the test and validation sets here.
 
 ```{r}
 
